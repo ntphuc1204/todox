@@ -1,8 +1,49 @@
 import AddTask from '@/components/AddTask'
+import Footer from '@/components/footer'
 import Header from '@/components/header'
-import React from 'react'
+import TaskAndFilter from '@/components/TaskAndFilter'
+import TaskList from '@/components/TaskList'
+import React, { useEffect } from 'react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import axios from 'axios'
+import DateTimeFilter from '@/components/DateTimeFilter'
+import TaskListPagination from '@/components/TaskListPagination'
 
 const HomePage = () => {
+  const [taskBuffer, setTaskBuffer] = useState([]);
+  const [activeCount, setActiveCount] = useState(0);
+  const [completeCount, setCompleteCount] = useState(0);
+  const [filter, setFilter] = useState('all');
+  const [dateQuery, setDateQuery] = useState("today");
+  useEffect(() => {
+    fetchTasks();
+  },[dateQuery])
+  const fetchTasks = async () => { 
+    try {
+      const res = await axios.get(`http://localhost:5001/api/tasks?filter=${dateQuery}`);
+      setTaskBuffer(res.data.tasks);
+      setCompleteCount(res.data.completeCount);
+      setActiveCount(res.data.activeCount);
+      console.log(res.data)
+    } catch (error) {
+      console.error(error);
+      toast.error("error accessing tasks")
+    }
+  }
+  const filteredTasks = taskBuffer.filter((task) => {
+    switch (filter) {
+      case "active":
+        return task.status === "active";
+      case "completed":
+        return task.status === "complete";
+      default:
+        return true;
+    }
+  })
+  const handleTaskChanged = () => {
+    fetchTasks();
+  }
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] relative">
       {/* Diagonal Fade Center Grid Background */}
@@ -23,7 +64,19 @@ const HomePage = () => {
       <div className='container pt-8 mx-auto relative z-10'>
         <div className='w-full max-w-2xl p-6 mx-auto space-y-6'>
           <Header />
-          <AddTask />
+          <AddTask handleNewTaskTitle={ handleTaskChanged } />
+          <TaskAndFilter
+            filter={filter}
+            setFilter={setFilter}
+            completedTasksCount={completeCount}
+            activeTasksCount={activeCount} />
+          <TaskList filterTasks={filteredTasks} filter={filter} handleTaskChanged={handleTaskChanged} />
+          <div className='flex flex-col items-center justify-between gap-6 sm:flex-row'>
+          <TaskListPagination/>
+            <DateTimeFilter dateQuery={dateQuery} setDateQuery={ setDateQuery} />
+          </div>
+          
+          <Footer completedTaskCount={completeCount} activeTaskCount={activeCount}/>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { Button } from './ui/button'
 import { Filter } from 'lucide-react'
 import { FilterOptions } from '@/lib/data'
 
-function TaskAndFilter({completedTasksCount = 0, activeTasksCount = 0, filter="all"}) {
+function TaskAndFilter({setFilter,completedTasksCount, activeTasksCount, filter="all"}) {
   return (
     <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className='flex gap-3'>
@@ -27,9 +27,10 @@ function TaskAndFilter({completedTasksCount = 0, activeTasksCount = 0, filter="a
                 Object.keys(FilterOptions).map((type) => (
                     <Button
                         key={type}
-                        gradient={filter === type ? "gradient" : "ghost"}
+                        variant={filter === type ? "gradient" : "ghost"}
                         size="sm"
                         className="capitalize"
+                        onClick={()=>setFilter(type)}
                     >
                         <Filter className='size-4' />
                         {FilterOptions[type]}
