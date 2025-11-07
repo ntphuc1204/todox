@@ -10,6 +10,7 @@ import axios from 'axios'
 import DateTimeFilter from '@/components/DateTimeFilter'
 import TaskListPagination from '@/components/TaskListPagination'
 import { visibleTaskLimit } from '@/lib/data'
+import api from '@/lib/axios'
 
 const HomePage = () => {
   const [taskBuffer, setTaskBuffer] = useState([]);
@@ -26,7 +27,7 @@ const HomePage = () => {
   },[filter,dateQuery])
   const fetchTasks = async () => { 
     try {
-      const res = await axios.get(`http://localhost:5001/api/tasks?filter=${dateQuery}`);
+      const res = await api.get(`/tasks?filter=${dateQuery}`);
       setTaskBuffer(res.data.tasks);
       setCompleteCount(res.data.completeCount);
       setActiveCount(res.data.activeCount);

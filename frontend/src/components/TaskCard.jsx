@@ -6,13 +6,14 @@ import { cn } from '@/lib/utils';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
 import axios from 'axios';
+import api from '@/lib/axios';
 
 const TaskCard = ({ task, index, handleTaskChanged }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [updateTaskTitle,setUpdateTaskTitle]= useState(task.title || "")
   const deleteTask = async (taskId) => {
     try {
-      await axios.delete(`http://localhost:5001/api/tasks/${taskId}`);
+      await api.delete(`/tasks/${taskId}`);
       toast.success("delete Task complete")
       handleTaskChanged();
     } catch (error) {
@@ -23,7 +24,7 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
   const updateTask = async () => {
     try {
       setIsEditing(false);
-      await axios.put(`http://localhost:5001/api/tasks/${task._id}`, {
+      await api.put(`/tasks/${task._id}`, {
         title: updateTaskTitle
       });
       toast.success(`update to ${updateTaskTitle}`)
@@ -36,13 +37,13 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
   const tongleTaskCompleteButton = async () => {
     try {
       if (task.status === "active") {
-        await axios.put(`http://localhost:5001/api/tasks/${task._id}`, {
+        await api.put(`/tasks/${task._id}`, {
           status: "complete",
           completedAt: new Date().toISOString(),
         });
         toast.success(`change task to complete`)
       } else {
-        await axios.put(`http://localhost:5001/api/tasks/${task._id}`, {
+        await api.put(`/tasks/${task._id}`, {
           status: "active",
           completedAt: null,
         });
