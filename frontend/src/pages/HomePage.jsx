@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import axios from 'axios'
 import DateTimeFilter from '@/components/DateTimeFilter'
 import TaskListPagination from '@/components/TaskListPagination'
+import { visibleTaskLimit } from '@/lib/data'
 
 const HomePage = () => {
   const [taskBuffer, setTaskBuffer] = useState([]);
@@ -16,9 +17,13 @@ const HomePage = () => {
   const [completeCount, setCompleteCount] = useState(0);
   const [filter, setFilter] = useState('all');
   const [dateQuery, setDateQuery] = useState("today");
+  const [page, setPage] = useState(1);
   useEffect(() => {
     fetchTasks();
-  },[dateQuery])
+  }, [dateQuery])
+  useEffect(() => {
+    setPage(1);
+  },[filter,dateQuery])
   const fetchTasks = async () => { 
     try {
       const res = await axios.get(`http://localhost:5001/api/tasks?filter=${dateQuery}`);
@@ -30,6 +35,19 @@ const HomePage = () => {
       console.error(error);
       toast.error("error accessing tasks")
     }
+  }
+  const handleNext = () => {
+    if (page < totalPages) {
+      setPage((prev)=> prev + 1)
+    }
+  }
+  const handlePrev = () => {
+    if (page > 1) {
+      setPage((prev)=> prev - 1)
+    }
+  }
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
   }
   const filteredTasks = taskBuffer.filter((task) => {
     switch (filter) {
@@ -44,8 +62,16 @@ const HomePage = () => {
   const handleTaskChanged = () => {
     fetchTasks();
   }
+  const visibleTask = filteredTasks.slice(
+    (page - 1) * visibleTaskLimit,
+    page * visibleTaskLimit
+  );
+  if (visibleTask.length === 0) {
+    handlePrev();
+  }
+  const totalPages = Math.ceil(filteredTasks.length / visibleTaskLimit);
   return (
-    <div className="min-h-screen w-full bg-[#f9fafb] relative">
+    <div className="min-h-screen w-full bg-[#b3b39c] relative">
       {/* Diagonal Fade Center Grid Background */}
       <div
         className="absolute inset-0 z-0"
@@ -62,7 +88,7 @@ const HomePage = () => {
         }}
       />
       <div className='container pt-8 mx-auto relative z-10'>
-        <div className='w-full max-w-2xl p-6 mx-auto space-y-6'>
+        <div className='w-full max-w-2xl p-6 mx-auto space-y-6 sm:p-0'>
           <Header />
           <AddTask handleNewTaskTitle={ handleTaskChanged } />
           <TaskAndFilter
@@ -70,9 +96,15 @@ const HomePage = () => {
             setFilter={setFilter}
             completedTasksCount={completeCount}
             activeTasksCount={activeCount} />
-          <TaskList filterTasks={filteredTasks} filter={filter} handleTaskChanged={handleTaskChanged} />
+          <TaskList filterTasks={visibleTask} filter={filter} handleTaskChanged={handleTaskChanged} />
           <div className='flex flex-col items-center justify-between gap-6 sm:flex-row'>
-          <TaskListPagination/>
+            <TaskListPagination
+              handleNext={handleNext}
+              handlePrev={handlePrev}
+              handlePageChange={handlePageChange}
+              page={page}
+              totalPages={totalPages}
+              />
             <DateTimeFilter dateQuery={dateQuery} setDateQuery={ setDateQuery} />
           </div>
           

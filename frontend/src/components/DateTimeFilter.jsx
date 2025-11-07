@@ -32,7 +32,7 @@ const DateTimeFilter = ({dateQuery,setDateQuery}) => {
         >
         {
             dateQuery
-            ?option.find((option) => option.value === dateQuery)?.label
+            ?options.find((option) => option.value === dateQuery)?.label
             :options[0].label
         }
         <ChevronsUpDown className="opacity-50" />
